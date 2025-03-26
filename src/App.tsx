@@ -9,6 +9,14 @@ import { TaskCategory } from './types/task';
 
 const categories: (TaskCategory | 'all')[] = ['all', 'personal', 'work', 'shopping', 'health'];
 
+const categoryGradients = {
+  all: 'from-gray-900 to-gray-600',
+  personal: 'from-blue-500 to-blue-600',
+  work: 'from-purple-500 to-purple-600',
+  shopping: 'from-green-500 to-green-600',
+  health: 'from-red-500 to-red-600',
+};
+
 export default function App() {
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
   const { tasks, addTask, toggleTask, deleteTask, filterCategory, setFilterCategory } = useTaskStore();
@@ -18,37 +26,51 @@ export default function App() {
     : tasks.filter(task => task.category === filterCategory);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-12 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-12 dark:from-gray-900 dark:to-gray-800">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tasks</h1>
-          <button
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex items-center justify-between"
+        >
+          <h1 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-bold text-transparent dark:from-gray-100 dark:to-gray-400">
+            Tasks
+          </h1>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsNewTaskOpen(true)}
-            className="flex items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20 transition-shadow hover:shadow-xl hover:shadow-blue-500/30 dark:shadow-blue-400/20 dark:hover:shadow-blue-400/30"
           >
-            <Plus size={16} />
+            <Plus size={18} />
             New Task
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
-        <div className="mb-6 flex gap-2">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700"
+        >
           {categories.map((category) => (
-            <button
+            <motion.button
               key={category}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setFilterCategory(category)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-full px-6 py-2.5 text-sm font-medium shadow-lg transition-all ${
                 filterCategory === category
-                  ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                  ? `bg-gradient-to-r ${categoryGradients[category]} text-white shadow-${category}-500/20`
+                  : 'bg-white text-gray-600 shadow-gray-200/50 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:shadow-gray-900/50 dark:hover:bg-gray-700'
               }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         <motion.div layout className="space-y-4">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {filteredTasks.map((task) => (
               <TaskCard
                 key={task.id}
@@ -57,17 +79,29 @@ export default function App() {
                 onDelete={deleteTask}
               />
             ))}
+            
+            {filteredTasks.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white/50 p-12 text-center backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50"
+              >
+                <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  No tasks found
+                </p>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Create a new task to get started!
+                </p>
+                <button
+                  onClick={() => setIsNewTaskOpen(true)}
+                  className="mt-4 text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  Add your first task →
+                </button>
+              </motion.div>
+            )}
           </AnimatePresence>
-          
-          {filteredTasks.length === 0 && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center text-gray-500 dark:text-gray-400"
-            >
-              No tasks found. Create a new task to get started!
-            </motion.p>
-          )}
         </motion.div>
       </div>
 

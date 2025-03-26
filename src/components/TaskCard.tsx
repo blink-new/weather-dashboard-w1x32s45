@@ -10,10 +10,17 @@ interface TaskCardProps {
 }
 
 const categoryColors = {
-  personal: 'bg-blue-500',
-  work: 'bg-purple-500',
-  shopping: 'bg-green-500',
-  health: 'bg-red-500',
+  personal: 'from-blue-400 to-blue-500',
+  work: 'from-purple-400 to-purple-500',
+  shopping: 'from-green-400 to-green-500',
+  health: 'from-red-400 to-red-500',
+};
+
+const categoryIcons = {
+  personal: '👤',
+  work: '💼',
+  shopping: '🛍️',
+  health: '❤️',
 };
 
 export function TaskCard({ task, onToggle, onDelete }: TaskCardProps) {
@@ -23,34 +30,64 @@ export function TaskCard({ task, onToggle, onDelete }: TaskCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="group relative flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md dark:bg-gray-800 dark:border-gray-700"
+      whileHover={{ scale: 1.02 }}
+      className="group relative overflow-hidden rounded-xl border bg-white/50 p-4 shadow-lg backdrop-blur-sm transition-all hover:shadow-xl dark:bg-gray-800/50 dark:border-gray-700"
     >
-      <button
-        onClick={() => onToggle(task.id)}
-        className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors ${
-          task.completed
-            ? 'border-green-500 bg-green-500'
-            : 'border-gray-300 hover:border-green-500'
-        }`}
-      >
-        {task.completed && <Check size={14} className="text-white" />}
-      </button>
+      <div className="absolute inset-0 bg-gradient-to-r opacity-5 dark:opacity-10" />
       
-      <div className="flex-1">
-        <p className={`font-medium ${task.completed ? 'text-gray-400 line-through' : ''}`}>
-          {task.title}
-        </p>
-        <span className={`inline-block rounded-full px-2 py-0.5 text-xs text-white ${categoryColors[task.category]}`}>
-          {task.category}
-        </span>
-      </div>
+      <div className="relative flex items-center gap-4">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onToggle(task.id)}
+          className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
+            task.completed
+              ? 'border-green-500 bg-green-500 dark:border-green-400 dark:bg-green-400'
+              : 'border-gray-300 hover:border-green-500 dark:border-gray-600 dark:hover:border-green-400'
+          }`}
+        >
+          {task.completed && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+            >
+              <Check size={14} className="text-white" />
+            </motion.div>
+          )}
+        </motion.button>
+        
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <p className={`font-medium transition-all ${
+              task.completed 
+                ? 'text-gray-400 line-through' 
+                : 'text-gray-900 dark:text-gray-100'
+            }`}>
+              {task.title}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${
+              categoryColors[task.category]
+            } px-2 py-0.5 text-xs font-medium text-white shadow-sm`}>
+              {categoryIcons[task.category]} {task.category}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {new Date(task.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
 
-      <button
-        onClick={() => onDelete(task.id)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-      >
-        <Trash2 size={18} />
-      </button>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onDelete(task.id)}
+          className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+        >
+          <Trash2 size={18} />
+        </motion.button>
+      </div>
     </motion.div>
   );
 }
