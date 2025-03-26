@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, TaskCategory, TimeEntry } from '../types/task';
+import { Task, TaskCategory } from '../types/task';
 
 interface TaskStore {
   tasks: Task[];
@@ -10,13 +10,13 @@ interface TaskStore {
   toggleTask: (id: string) => void;
   deleteTask: (id: string) => void;
   setFilterCategory: (category: TaskCategory | 'all') => void;
-  startTimeTracking: (taskId: string) => void;
-  stopTimeTracking: (taskId: string) => void;
+  startTimeTracking: (id: string) => void;
+  stopTimeTracking: (id: string) => void;
 }
 
 export const useTaskStore = create<TaskStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       tasks: [],
       filterCategory: 'all',
 
@@ -37,9 +37,7 @@ export const useTaskStore = create<TaskStore>()(
       toggleTask: (id) => {
         set((state) => ({
           tasks: state.tasks.map((task) =>
-            task.id === id
-              ? { ...task, completed: !task.completed }
-              : task
+            task.id === id ? { ...task, completed: !task.completed } : task
           ),
         }));
       },
@@ -54,31 +52,32 @@ export const useTaskStore = create<TaskStore>()(
         set({ filterCategory: category });
       },
 
-      startTimeTracking: (taskId) => {
+      startTimeTracking: (id) => {
         set((state) => ({
           tasks: state.tasks.map((task) => {
-            if (task.id === taskId) {
-              const newTimeEntry: TimeEntry = {
-                id: crypto.randomUUID(),
-                startTime: new Date().toISOString(),
-              };
+            if (task.id === id) {
               return {
                 ...task,
                 isTracking: true,
-                timeEntries: [...task.timeEntries, newTimeEntry],
+                timeEntries: [
+                  ...task.timeEntries,
+                  { id: crypto.randomUUID(), startTime: new Date().toISOString() }
+                ],
               };
             }
-            return task;
+            // Stop tracking for all other tasks
+            return task.isTracking ? { ...task, isTracking: false } : task;
           }),
         }));
       },
 
-      stopTimeTracking: (taskId) => {
+      stopTimeTracking: (id) => {
         set((state) => ({
           tasks: state.tasks.map((task) => {
-            if (task.id === taskId) {
+            if (task.id === id && task.isTracking) {
               const timeEntries = [...task.timeEntries];
               const currentEntry = timeEntries[timeEntries.length - 1];
+              
               if (currentEntry && !currentEntry.endTime) {
                 const endTime = new Date();
                 const startTime = new Date(currentEntry.startTime);
@@ -97,7 +96,7 @@ export const useTaskStore = create<TaskStore>()(
                   totalTime: task.totalTime + duration,
                 };
               }
-              return task;
+              return { ...task, isTracking: false };
             }
             return task;
           }),
