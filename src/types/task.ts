@@ -1,10 +1,20 @@
 
-export type TaskCategory = 'personal' | 'work' | 'shopping' | 'health';
+export type TaskCategory = 'work' | 'personal' | 'shopping' | 'health';
+
+export interface TimeEntry {
+  id: string;
+  startTime: string;
+  endTime?: string;
+  duration?: number; // in seconds
+}
 
 export interface Task {
   id: string;
   title: string;
-  completed: boolean;
   category: TaskCategory;
-  createdAt: number;
+  completed: boolean;
+  createdAt: string;
+  timeEntries: TimeEntry[];
+  isTracking: boolean;
+  totalTime: number; // in seconds
 }
